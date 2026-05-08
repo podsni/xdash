@@ -2,25 +2,12 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import bcrypt from 'bcryptjs';
-import { getSession } from '@/lib/auth';
-
-async function checkSuperAdmin() {
-    const session = await getSession();
-    if (!session) return null;
-
-    const result = await pool.query<{ role: string }>('SELECT role FROM users WHERE id = $1', [session.userId]);
-
-    if (result.rows.length === 0 || result.rows[0].role !== 'superadmin') {
-        return null;
-    }
-
-    return session;
-}
+import { requireSuperAdmin, writeAdminAuditLog } from '@/lib/admin';
 
 export async function GET() {
     try {
-        const session = await checkSuperAdmin();
-        if (!session) {
+        const admin = await requireSuperAdmin();
+        if (!admin) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
@@ -37,8 +24,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
     try {
-        const session = await checkSuperAdmin();
-        if (!session) {
+        const admin = await requireSuperAdmin();
+        if (!admin) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
@@ -64,6 +51,13 @@ export async function POST(request: Request) {
             'INSERT INTO users (email, password_hash, role) VALUES ($1, $2, $3) RETURNING id, email, role, created_at',
             [email, passwordHash, role]
         );
+
+        await writeAdminAuditLog({
+            actorUserId: admin.userId,
+            targetUserId: result.rows[0].id,
+            action: 'admin_user_create',
+            metadata: { email: result.rows[0].email, role: result.rows[0].role },
+        });
 
         return NextResponse.json(result.rows[0]);
     } catch (error) {

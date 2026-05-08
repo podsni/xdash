@@ -11,6 +11,8 @@ type AccountRow = {
     username: string;
     encrypted_password: string;
     encrypted_otp_secret: string;
+    website: string;
+    icon: string;
     created_at: string;
     updated_at: string;
 };
@@ -56,16 +58,16 @@ export async function PUT(
         const p = await params;
         const { id } = p;
         const body = await request.json();
-        const { service_name, username, password, otp_secret } = body;
+        const { service_name, username, password, otp_secret, website, icon } = body;
 
         if (!service_name) {
             return NextResponse.json({ error: 'Service name is required' }, { status: 400 });
         }
 
         // Dynamic query update is safer but let's be explicit for now
-        let query = 'UPDATE accounts SET service_name = $1, username = $2';
-        const values: string[] = [service_name, username || ''];
-        let idx = 3;
+        let query = 'UPDATE accounts SET service_name = $1, username = $2, website = $3, icon = $4, updated_at = now()';
+        const values: string[] = [service_name, username || '', website || '', icon || ''];
+        let idx = 5;
 
         if (password !== undefined) {
             query += `, encrypted_password = $${idx}`;
@@ -96,6 +98,8 @@ export async function PUT(
             username: row.username,
             password: decrypt(row.encrypted_password),
             otp_secret: decrypt(row.encrypted_otp_secret),
+            website: row.website,
+            icon: row.icon,
             created_at: row.created_at,
             updated_at: row.updated_at
         });

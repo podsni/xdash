@@ -30,76 +30,94 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-zinc-950 p-4 md:p-8 lg:p-12 relative overflow-hidden">
-      {/* Background Decor */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
-
-      <div className="max-w-7xl mx-auto space-y-8 relative z-10">
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-br from-primary to-purple-600 rounded-lg shadow-lg shadow-primary/20">
-              <ShieldCheck className="h-8 w-8 text-white" />
+    <main className="relative min-h-[100dvh] bg-[#0a0b0a] text-zinc-100">
+      <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-950/10 via-transparent to-transparent" />
+      <div className="relative z-10 mx-auto flex min-h-[100dvh] max-w-7xl flex-col gap-8 px-4 py-6 md:px-8 lg:px-10">
+        <header className="flex flex-col gap-6 border-b border-white/[0.08] pb-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-3">
+            <div className="inline-flex items-center gap-3 rounded-full border border-white/[0.12] bg-white/[0.04] px-4 py-2.5 text-xs font-medium tracking-wide text-zinc-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-sm">
+              <span className="flex size-7 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400/20 to-emerald-300/10 text-emerald-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]">
+                <ShieldCheck className="size-4" strokeWidth={2} />
+              </span>
+              Bitdash Vault
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">
-                OTP Vault
+              <h1 className="text-4xl font-semibold leading-tight tracking-tighter text-zinc-50 md:text-5xl">
+                Encrypted credential vault
               </h1>
-              <p className="text-zinc-500 text-sm">Secure Encrypted Storage</p>
+              <p className="mt-3 max-w-2xl text-base leading-relaxed text-zinc-400">
+                Store service logins and OTP secrets securely.
+              </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <AddAccountDialog onAccountAdded={() => mutate()} />
             {user?.role === 'superadmin' && (
               <Link href="/admin">
-                <Button variant="outline" size="icon" className="text-yellow-500 hover:text-yellow-600 hover:border-yellow-500/50">
-                  <Crown className="h-4 w-4" />
+                <Button variant="outline" size="icon" className="size-11 rounded-lg border-white/[0.12] bg-white/[0.04] text-amber-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-200 hover:border-amber-300/30 hover:bg-white/[0.08] active:scale-[0.98]">
+                  <Crown className="size-4" strokeWidth={2} />
                 </Button>
               </Link>
             )}
             <Link href="/settings">
-              <Button variant="outline" size="icon">
-                <Settings className="h-4 w-4" />
+              <Button variant="outline" size="icon" className="size-11 rounded-lg border-white/[0.12] bg-white/[0.04] text-zinc-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-200 hover:border-white/20 hover:bg-white/[0.08] active:scale-[0.98]">
+                <Settings className="size-4" strokeWidth={2} />
               </Button>
             </Link>
-            <Button variant="outline" size="icon" onClick={async () => {
+            <Button variant="outline" size="icon" className="size-11 rounded-lg border-white/[0.12] bg-white/[0.04] text-zinc-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-all duration-200 hover:border-white/20 hover:bg-white/[0.08] active:scale-[0.98]" onClick={async () => {
               await fetch('/api/auth/logout', { method: 'POST' });
               window.location.href = '/login';
             }}>
-              <LogOut className="h-4 w-4" />
+              <LogOut className="size-4" strokeWidth={2} />
             </Button>
           </div>
         </header>
 
-        {/* User Info Badge */}
         {user && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Logged in as</span>
-            <span className="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded">{user.email}</span>
+          <div className="flex flex-wrap items-center gap-2.5 text-sm text-zinc-500">
+            <span>Signed in as</span>
+            <span className="rounded-lg border border-white/[0.12] bg-white/[0.06] px-3 py-1.5 font-mono text-xs text-zinc-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+              {user.email}
+            </span>
             {user.role === 'superadmin' && (
-              <span className="text-xs bg-yellow-500/10 text-yellow-500 px-2 py-0.5 rounded-full">Superadmin</span>
+              <span className="rounded-full border border-amber-300/25 bg-amber-300/10 px-3 py-1 text-xs font-medium text-amber-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+                Superadmin
+              </span>
             )}
           </div>
         )}
 
         {error && (
-          <div className="p-4 border border-destructive/50 bg-destructive/10 text-destructive rounded-lg">
-            Failed to load accounts. Check your database connection.
+          <div className="flex items-start gap-3 rounded-xl border border-red-300/25 bg-red-400/10 p-4 text-sm text-red-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+            <div>
+              <p className="font-medium">Failed to load accounts.</p>
+              <p className="mt-1.5 text-red-100/70">Check the database connection and schema, then refresh the vault.</p>
+            </div>
           </div>
         )}
 
         {!accounts && !error && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-48 rounded-xl bg-zinc-800/50 animate-pulse" />
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} className="h-52 animate-pulse rounded-xl border border-white/[0.12] bg-white/[0.04]" />
             ))}
           </div>
         )}
 
         {accounts && accounts.length === 0 && (
-          <div className="text-center py-20 text-zinc-500 bg-zinc-900/50 rounded-xl border border-dashed border-zinc-800">
-            <h3 className="text-lg font-medium text-zinc-300">No accounts yet</h3>
-            <p className="mb-4">Add your first service to start generating OTPs.</p>
+          <div className="grid min-h-[360px] place-items-center rounded-xl border border-dashed border-white/20 bg-white/[0.02] p-8 text-center">
+            <div className="max-w-md">
+              <div className="mx-auto flex size-14 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400/15 to-emerald-300/5 text-emerald-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.1)]">
+                <ShieldCheck className="size-6" strokeWidth={2} />
+              </div>
+              <h2 className="mt-6 text-2xl font-semibold tracking-tight text-zinc-50">Your vault is empty</h2>
+              <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+                Add a service login, attach an OTP secret, and Bitdash will keep the token ready for quick copy.
+              </p>
+              <div className="mt-6">
+                <AddAccountDialog onAccountAdded={() => mutate()} />
+              </div>
+            </div>
           </div>
         )}
 

@@ -3,15 +3,12 @@
 
 import { useEffect, useState } from 'react';
 import { authenticator } from 'otplib';
-import { motion } from 'framer-motion';
-import { Copy } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function OtpDisplay({ secret }: { secret: string }) {
     const [token, setToken] = useState('');
     const [nextToken, setNextToken] = useState('');
     const [timeLeft, setTimeLeft] = useState(30);
-    const [showNext, setShowNext] = useState(true); // Default enabled for premium look
 
     useEffect(() => {
         if (!secret) return;
@@ -47,7 +44,7 @@ export function OtpDisplay({ secret }: { secret: string }) {
         toast.success('OTP copied');
     };
 
-    if (!secret) return <div className="text-zinc-500 text-sm">No Secret key</div>;
+    if (!secret) return <div className="text-sm text-zinc-500">No OTP secret</div>;
 
     // Radius for SVG circle
     const radius = 16;
@@ -55,31 +52,23 @@ export function OtpDisplay({ secret }: { secret: string }) {
     const strokeDashoffset = circumference - (timeLeft / 30) * circumference;
 
     return (
-        <div className="flex w-full relative h-[70px]">
-            {/* Absolute Timer at Top Right (Visual trick: moves up to align with header if used in card) 
-                Actually, let's keep it simple: Flex row.
-            */}
-
-            {/* Left Col: Main Token */}
-            <div className="flex-1 flex items-end pb-1">
+        <div className="relative flex h-[72px] w-full">
+            <div className="flex flex-1 items-end pb-1">
                 <div
-                    className="cursor-pointer group/main-token"
+                    className="group/main-token cursor-pointer"
                     onClick={() => copyToClipboard(token)}
                 >
-                    <div className="text-3xl md:text-4xl font-mono tracking-wider text-white font-bold select-none tabular-nums drop-shadow-lg whitespace-nowrap">
-                        {token.substring(0, 3)} {token.substring(3)}
+                    <div className="select-none whitespace-nowrap font-mono text-3xl font-semibold tracking-wider text-zinc-50 tabular-nums md:text-4xl">
+                        {token === 'INVALID' ? 'INVALID' : `${token.substring(0, 3)} ${token.substring(3)}`}
                     </div>
                 </div>
             </div>
 
-            {/* Right Col: Timer & Next Token */}
-            <div className="flex flex-col items-end justify-between h-full min-w-[80px]">
-
-                {/* Circular Timer */}
-                <div className="relative w-10 h-10 flex items-center justify-center shrink-0">
+            <div className="flex h-full min-w-[80px] flex-col items-end justify-between">
+                <div className="relative flex size-10 shrink-0 items-center justify-center">
                     <svg className="transform -rotate-90 w-full h-full">
                         <circle
-                            className="text-zinc-800"
+                            className="text-white/10"
                             strokeWidth="3"
                             stroke="currentColor"
                             fill="transparent"
@@ -88,7 +77,7 @@ export function OtpDisplay({ secret }: { secret: string }) {
                             cy="20"
                         />
                         <circle
-                            className={`${timeLeft < 5 ? 'text-red-500' : 'text-purple-500'} transition-colors duration-300`}
+                            className={`${timeLeft < 5 ? 'text-red-300' : 'text-emerald-300'} transition-colors duration-300`}
                             strokeWidth="3"
                             strokeDasharray={circumference}
                             strokeDashoffset={strokeDashoffset}
@@ -101,15 +90,14 @@ export function OtpDisplay({ secret }: { secret: string }) {
                             style={{ transition: 'stroke-dashoffset 1s linear' }}
                         />
                     </svg>
-                    <span className="absolute text-[10px] font-bold text-zinc-400 select-none">
+                    <span className="absolute select-none font-mono text-[10px] font-semibold text-zinc-400">
                         {timeLeft}
                     </span>
                 </div>
 
-                {/* Next Token */}
-                <div className="flex flex-col items-end opacity-60 hover:opacity-100 transition-opacity cursor-pointer" onClick={() => copyToClipboard(nextToken)}>
-                    <span className="text-[9px] uppercase tracking-wider text-zinc-500 mb-[-2px]">Next</span>
-                    <span className="font-mono text-sm font-semibold text-zinc-300 tabular-nums">
+                <div className="flex cursor-pointer flex-col items-end opacity-60 transition-opacity hover:opacity-100" onClick={() => copyToClipboard(nextToken)}>
+                    <span className="mb-[-2px] text-[9px] uppercase tracking-[0.18em] text-zinc-500">Next</span>
+                    <span className="font-mono text-sm font-semibold tabular-nums text-zinc-300">
                         {nextToken.substring(0, 3)} {nextToken.substring(3)}
                     </span>
                 </div>

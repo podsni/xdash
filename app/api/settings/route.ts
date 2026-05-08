@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { getSession } from '@/lib/auth';
+import { requireSuperAdmin, writeAdminAuditLog } from '@/lib/admin';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -39,8 +40,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
     try {
-        const session = await getSession();
-        if (!session || session.role !== 'superadmin') {
+        const admin = await requireSuperAdmin();
+        if (!admin) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
         }
 
@@ -52,6 +53,11 @@ export async function POST(request: Request) {
                 'INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2',
                 ['registration_enabled', String(registration_enabled)]
             );
+            await writeAdminAuditLog({
+                actorUserId: admin.userId,
+                action: 'admin_registration_update',
+                metadata: { registration_enabled: Boolean(registration_enabled) },
+            });
         }
 
         return NextResponse.json({ success: true });

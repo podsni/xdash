@@ -1,0 +1,6 @@
+[mcp_servers.neon]
+type = "http"
+url = "https://mcp.neon.tech/mcp"
+
+[mcp_servers.neon.tools.run_sql]
+approval_mode = "approve"

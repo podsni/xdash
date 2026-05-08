@@ -10,7 +10,10 @@ type AccountRow = {
     username: string;
     encrypted_password: string;
     encrypted_otp_secret: string;
+    website: string;
+    icon: string;
     created_at: string;
+    updated_at: string;
 };
 
 export async function GET() {
@@ -21,7 +24,10 @@ export async function GET() {
         }
 
         const result = await pool.query<AccountRow>(
-            'SELECT * FROM accounts WHERE user_id = $1 ORDER BY created_at DESC',
+            `SELECT id, service_name, username, encrypted_password, encrypted_otp_secret, website, icon, created_at, updated_at
+             FROM accounts
+             WHERE user_id = $1
+             ORDER BY created_at DESC`,
             [session.userId]
         );
 
@@ -31,7 +37,10 @@ export async function GET() {
             username: row.username,
             password: decrypt(row.encrypted_password),
             otp_secret: decrypt(row.encrypted_otp_secret),
-            created_at: row.created_at
+            website: row.website,
+            icon: row.icon,
+            created_at: row.created_at,
+            updated_at: row.updated_at
         }));
 
         return NextResponse.json(accounts);
@@ -49,7 +58,7 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { service_name, username, password, otp_secret } = body;
+        const { service_name, username, password, otp_secret, website, icon } = body;
 
         if (!service_name) {
             return NextResponse.json({ error: 'Service name is required' }, { status: 400 });
@@ -59,11 +68,11 @@ export async function POST(request: Request) {
         const encrypted_otp_secret = otp_secret ? encrypt(otp_secret) : '';
 
         const query = `
-      INSERT INTO accounts (service_name, username, encrypted_password, encrypted_otp_secret, user_id)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO accounts (service_name, username, encrypted_password, encrypted_otp_secret, website, icon, user_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
     `;
-        const values = [service_name, username || '', encrypted_password, encrypted_otp_secret, session.userId];
+        const values = [service_name, username || '', encrypted_password, encrypted_otp_secret, website || '', icon || '', session.userId];
 
         const result = await pool.query<AccountRow>(query, values);
 
@@ -74,7 +83,10 @@ export async function POST(request: Request) {
             username: row.username,
             password: password || '',
             otp_secret: otp_secret || '',
-            created_at: row.created_at
+            website: row.website,
+            icon: row.icon,
+            created_at: row.created_at,
+            updated_at: row.updated_at
         });
     } catch (error) {
         console.error('Database Error:', error);

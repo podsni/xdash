@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -46,7 +47,7 @@ export function AddAccountDialog({ onAccountAdded }: { onAccountAdded: () => voi
                 icon: data.icon || prev.icon
             }));
             toast.success('Metadata fetched!');
-        } catch (e) {
+        } catch {
             toast.error('Failed to fetch metadata');
         } finally {
             setLoadingMeta(false);
@@ -64,7 +65,7 @@ export function AddAccountDialog({ onAccountAdded }: { onAccountAdded: () => voi
             setFormData({ service_name: '', username: '', password: '', otp_secret: '', website: '', icon: '' });
             setOpen(false);
             onAccountAdded();
-        } catch (e) {
+        } catch {
             toast.error('Failed to add account');
         } finally {
             setLoading(false);
@@ -74,97 +75,92 @@ export function AddAccountDialog({ onAccountAdded }: { onAccountAdded: () => voi
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-6 shadow-lg shadow-indigo-500/20 font-medium">
-                    <Plus className="h-4 w-4" /> New
+                <Button className="gap-2 rounded-md bg-emerald-300 px-5 font-medium text-zinc-950 shadow-none hover:bg-emerald-200 active:scale-[0.98]">
+                    <Plus className="size-4" /> New
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] bg-background border-zinc-200 dark:border-zinc-800">
+            <DialogContent className="border-white/10 bg-[#11130f] text-zinc-100 shadow-2xl sm:max-w-[520px]">
                 <DialogHeader>
-                    <DialogTitle>Add New Account</DialogTitle>
+                    <DialogTitle>Add account</DialogTitle>
                     <DialogDescription>
-                        Store your credentials securely. OTP secrets are encrypted.
+                        Store credentials and an optional OTP secret for this service.
                     </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="website" className="text-right">
-                            Website
-                        </Label>
-                        <div className="col-span-3 flex gap-2">
+                <form onSubmit={handleSubmit} className="grid gap-5 py-2">
+                    <div className="grid gap-2">
+                        <Label htmlFor="website">Website</Label>
+                        <div className="flex gap-2">
                             <Input
                                 id="website"
                                 value={formData.website || ''}
                                 onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                                 onBlur={handleAutoFill}
                                 placeholder="https://example.com"
-                                className="flex-1"
+                                className="h-10 flex-1 border-white/10 bg-white/[0.04]"
                             />
-                            <Button type="button" variant="secondary" onClick={handleAutoFill} disabled={loadingMeta} className="text-xs">
-                                {loadingMeta ? 'Loading...' : 'Auto-fill'}
+                            <Button type="button" variant="secondary" onClick={handleAutoFill} disabled={loadingMeta} className="h-10 shrink-0 border border-white/10 bg-white/[0.06] text-xs text-zinc-100 hover:bg-white/[0.1]">
+                                {loadingMeta ? 'Fetching...' : 'Auto-fill'}
                             </Button>
                         </div>
+                        <p className="text-xs text-zinc-500">Used to fetch a title and service icon.</p>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="service" className="text-right">
-                            Service
-                        </Label>
-                        <div className="col-span-3 relative">
+                    <div className="grid gap-2">
+                        <Label htmlFor="service">Service</Label>
+                        <div className="relative">
                             <Input
                                 id="service"
                                 value={formData.service_name}
                                 onChange={(e) => setFormData({ ...formData, service_name: e.target.value })}
-                                placeholder="Google, Facebook..."
-                                className={formData.icon ? "pl-10" : ""}
+                                placeholder="GitHub, Stripe, Work email"
+                                className={`h-10 border-white/10 bg-white/[0.04] ${formData.icon ? "pl-10" : ""}`}
                                 required
                             />
                             {formData.icon && (
-                                <img
+                                <Image
                                     src={formData.icon}
                                     alt="icon"
+                                    width={20}
+                                    height={20}
+                                    unoptimized
                                     className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full object-cover bg-white"
                                 />
                             )}
                         </div>
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="username" className="text-right">
-                            Username
-                        </Label>
+                    <div className="grid gap-2">
+                        <Label htmlFor="username">Username</Label>
                         <Input
                             id="username"
                             value={formData.username}
                             onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                             placeholder="email@example.com"
-                            className="col-span-3"
+                            className="h-10 border-white/10 bg-white/[0.04]"
                         />
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="password" className="text-right">
-                            Password
-                        </Label>
+                    <div className="grid gap-2">
+                        <Label htmlFor="password">Password</Label>
                         <Input
                             id="password"
                             type="password"
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            className="col-span-3"
+                            className="h-10 border-white/10 bg-white/[0.04]"
                         />
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="secret" className="text-right">
-                            OTP Secret
-                        </Label>
+                    <div className="grid gap-2">
+                        <Label htmlFor="secret">OTP Secret</Label>
                         <Input
                             id="secret"
                             value={formData.otp_secret}
                             onChange={(e) => setFormData({ ...formData, otp_secret: e.target.value })}
                             placeholder="JBSWY3DPEHPK3PXP"
-                            className="col-span-3 font-mono text-xs"
+                            className="h-10 border-white/10 bg-white/[0.04] font-mono text-xs"
                         />
+                        <p className="text-xs text-zinc-500">Spaces are removed before saving.</p>
                     </div>
                     <DialogFooter>
-                        <Button type="submit" disabled={loading}>
-                            {loading ? 'Saving...' : 'Save Account'}
+                        <Button type="submit" disabled={loading} className="bg-emerald-300 text-zinc-950 hover:bg-emerald-200">
+                            {loading ? 'Saving...' : 'Save account'}
                         </Button>
                     </DialogFooter>
                 </form>

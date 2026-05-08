@@ -2,28 +2,15 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import bcrypt from 'bcryptjs';
-import { getSession } from '@/lib/auth';
-
-async function checkSuperAdmin() {
-    const session = await getSession();
-    if (!session) return null;
-
-    const result = await pool.query<{ role: string }>('SELECT role FROM users WHERE id = $1', [session.userId]);
-
-    if (result.rows.length === 0 || result.rows[0].role !== 'superadmin') {
-        return null;
-    }
-
-    return session;
-}
+import { requireSuperAdmin, writeAdminAuditLog } from '@/lib/admin';
 
 export async function GET(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const session = await checkSuperAdmin();
-        if (!session) {
+        const admin = await requireSuperAdmin();
+        if (!admin) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
@@ -51,8 +38,8 @@ export async function PUT(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const session = await checkSuperAdmin();
-        if (!session) {
+        const admin = await requireSuperAdmin();
+        if (!admin) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
@@ -89,6 +76,7 @@ export async function PUT(
         }
 
         values.push(id);
+        updates.push('updated_at = now()');
         const query = `UPDATE users SET ${updates.join(', ')} WHERE id = $${idx} RETURNING id, email, role, created_at`;
 
         const result = await pool.query<{ id: string; email: string; role: string; created_at: string }>(query, values);
@@ -96,6 +84,17 @@ export async function PUT(
         if (result.rows.length === 0) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
+
+        await writeAdminAuditLog({
+            actorUserId: admin.userId,
+            targetUserId: result.rows[0].id,
+            action: 'admin_user_update',
+            metadata: {
+                email: result.rows[0].email,
+                role: result.rows[0].role,
+                password_changed: Boolean(password),
+            },
+        });
 
         return NextResponse.json(result.rows[0]);
     } catch (error) {
@@ -109,8 +108,8 @@ export async function DELETE(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const session = await checkSuperAdmin();
-        if (!session) {
+        const admin = await requireSuperAdmin();
+        if (!admin) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
@@ -118,9 +117,25 @@ export async function DELETE(
         const { id } = p;
 
         // Prevent self-deletion
-        if (id === session.userId) {
+        if (id === admin.userId) {
             return NextResponse.json({ error: 'Cannot delete your own account from admin panel' }, { status: 400 });
         }
+
+        const existing = await pool.query<{ id: string; email: string; role: string }>(
+            'SELECT id, email, role FROM users WHERE id = $1',
+            [id]
+        );
+        const user = existing.rows[0];
+        if (!user) {
+            return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        }
+
+        await writeAdminAuditLog({
+            actorUserId: admin.userId,
+            targetUserId: user.id,
+            action: 'admin_user_delete',
+            metadata: { email: user.email, role: user.role },
+        });
 
         // Delete user's accounts first
         await pool.query('DELETE FROM accounts WHERE user_id = $1', [id]);

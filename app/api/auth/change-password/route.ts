@@ -36,7 +36,7 @@ export async function POST(request: Request) {
 
         // Update password
         const newPasswordHash = bcrypt.hashSync(newPassword, 10);
-        await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [newPasswordHash, session.userId]);
+        await pool.query('UPDATE users SET password_hash = $1, updated_at = now() WHERE id = $2', [newPasswordHash, session.userId]);
 
         return NextResponse.json({ success: true, message: 'Password updated successfully' });
     } catch (error) {

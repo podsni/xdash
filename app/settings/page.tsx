@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,22 +43,22 @@ export default function SettingsPage() {
     const [deletingAccount, setDeletingAccount] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-    useEffect(() => {
-        fetchUser();
-    }, []);
-
-    const fetchUser = async () => {
+    const fetchUser = useCallback(async () => {
         try {
             const res = await fetch('/api/auth/me');
             if (!res.ok) throw new Error('Failed to fetch user');
             const data = await res.json();
             setUser(data);
-        } catch (err) {
+        } catch {
             router.push('/login');
         } finally {
             setLoading(false);
         }
-    };
+    }, [router]);
+
+    useEffect(() => {
+        fetchUser();
+    }, [fetchUser]);
 
     const handleChangePassword = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -123,56 +123,53 @@ export default function SettingsPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-background">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+            <div className="flex min-h-[100dvh] items-center justify-center bg-[#10110f]">
+                <div className="h-10 w-56 animate-pulse rounded-lg border border-white/10 bg-white/[0.04]" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-background p-4 md:p-8 lg:p-12 relative overflow-hidden">
-            <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
-            <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
-
-            <div className="max-w-2xl mx-auto space-y-8 relative z-10">
-                <header className="flex items-center gap-4">
+        <main className="min-h-[100dvh] bg-[#10110f] p-4 text-zinc-100 md:p-8 lg:p-10">
+            <div className="mx-auto max-w-3xl space-y-6">
+                <header className="flex items-center gap-4 border-b border-white/10 pb-6">
                     <Link href="/">
-                        <Button variant="ghost" size="icon" className="shrink-0">
-                            <ArrowLeft className="h-5 w-5" />
+                        <Button variant="ghost" size="icon" className="shrink-0 text-zinc-400 hover:bg-white/10 hover:text-zinc-50">
+                            <ArrowLeft className="size-5" />
                         </Button>
                     </Link>
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-gradient-to-br from-primary to-purple-600 rounded-lg shadow-lg shadow-primary/20">
-                            <Settings className="h-6 w-6 text-white" />
+                        <div className="flex size-11 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-emerald-200">
+                            <Settings className="size-5" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-                            <p className="text-sm text-muted-foreground">{user?.email}</p>
+                            <h1 className="text-2xl font-semibold tracking-tight text-zinc-50">Settings</h1>
+                            <p className="text-sm text-zinc-500">{user?.email}</p>
                         </div>
                     </div>
                 </header>
 
                 {/* Profile Info */}
-                <Card className="border-zinc-200 dark:border-zinc-800 bg-card/80 backdrop-blur-md">
+                <Card className="rounded-lg border-white/10 bg-white/[0.035] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
                     <CardHeader>
                         <div className="flex items-center gap-2">
-                            <Shield className="h-5 w-5 text-primary" />
-                            <CardTitle>Profile</CardTitle>
+                            <Shield className="size-5 text-emerald-200" />
+                            <CardTitle className="text-zinc-50">Profile</CardTitle>
                         </div>
                         <CardDescription>Your account information</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <Label className="text-muted-foreground text-xs">Email</Label>
-                                <p className="font-mono text-sm">{user?.email}</p>
+                                <Label className="text-xs text-zinc-500">Email</Label>
+                                <p className="mt-1 font-mono text-sm text-zinc-200">{user?.email}</p>
                             </div>
                             <div>
-                                <Label className="text-muted-foreground text-xs">Role</Label>
-                                <p className="text-sm capitalize">
+                                <Label className="text-xs text-zinc-500">Role</Label>
+                                <p className="mt-1 text-sm capitalize">
                                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${user?.role === 'superadmin'
-                                            ? 'bg-purple-500/10 text-purple-500'
-                                            : 'bg-blue-500/10 text-blue-500'
+                                            ? 'border border-amber-300/20 bg-amber-300/10 text-amber-200'
+                                            : 'border border-emerald-300/20 bg-emerald-300/10 text-emerald-200'
                                         }`}>
                                         {user?.role}
                                     </span>
@@ -183,11 +180,11 @@ export default function SettingsPage() {
                 </Card>
 
                 {/* Change Password */}
-                <Card className="border-zinc-200 dark:border-zinc-800 bg-card/80 backdrop-blur-md">
+                <Card className="rounded-lg border-white/10 bg-white/[0.035] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
                     <CardHeader>
                         <div className="flex items-center gap-2">
-                            <Key className="h-5 w-5 text-primary" />
-                            <CardTitle>Change Password</CardTitle>
+                            <Key className="size-5 text-emerald-200" />
+                            <CardTitle className="text-zinc-50">Change Password</CardTitle>
                         </div>
                         <CardDescription>Update your account password</CardDescription>
                     </CardHeader>
@@ -200,6 +197,7 @@ export default function SettingsPage() {
                                     type="password"
                                     value={currentPassword}
                                     onChange={(e) => setCurrentPassword(e.target.value)}
+                                    className="h-10 border-white/10 bg-white/[0.04]"
                                     required
                                 />
                             </div>
@@ -212,6 +210,7 @@ export default function SettingsPage() {
                                         placeholder="Min 6 characters"
                                         value={newPassword}
                                         onChange={(e) => setNewPassword(e.target.value)}
+                                        className="h-10 border-white/10 bg-white/[0.04]"
                                         required
                                     />
                                 </div>
@@ -222,11 +221,12 @@ export default function SettingsPage() {
                                         type="password"
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
+                                        className="h-10 border-white/10 bg-white/[0.04]"
                                         required
                                     />
                                 </div>
                             </div>
-                            <Button type="submit" disabled={changingPassword}>
+                            <Button type="submit" disabled={changingPassword} className="bg-emerald-300 text-zinc-950 hover:bg-emerald-200">
                                 {changingPassword ? 'Changing...' : 'Change Password'}
                             </Button>
                         </form>
@@ -234,11 +234,11 @@ export default function SettingsPage() {
                 </Card>
 
                 {/* Danger Zone */}
-                <Card className="border-red-500/30 bg-card/80 backdrop-blur-md">
+                <Card className="rounded-lg border-red-300/25 bg-red-400/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                     <CardHeader>
                         <div className="flex items-center gap-2">
-                            <AlertTriangle className="h-5 w-5 text-red-500" />
-                            <CardTitle className="text-red-500">Danger Zone</CardTitle>
+                            <AlertTriangle className="size-5 text-red-300" />
+                            <CardTitle className="text-red-200">Danger Zone</CardTitle>
                         </div>
                         <CardDescription>Irreversible and destructive actions</CardDescription>
                     </CardHeader>
@@ -250,7 +250,7 @@ export default function SettingsPage() {
                                     Delete Account
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent className="sm:max-w-md">
+                            <DialogContent className="border-white/10 bg-[#11130f] text-zinc-100 sm:max-w-md">
                                 <DialogHeader>
                                     <DialogTitle className="text-red-500">Delete Account</DialogTitle>
                                     <DialogDescription>
@@ -266,6 +266,7 @@ export default function SettingsPage() {
                                             value={deletePassword}
                                             onChange={(e) => setDeletePassword(e.target.value)}
                                             placeholder="Your current password"
+                                            className="h-10 border-white/10 bg-white/[0.04]"
                                         />
                                     </div>
                                 </div>
@@ -286,6 +287,6 @@ export default function SettingsPage() {
                     </CardContent>
                 </Card>
             </div>
-        </div>
+        </main>
     );
 }
