@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Eye, EyeOff, Copy, Clock, AlertTriangle, Shield, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { decryptData } from '@/lib/encryption';
+import { OtpDisplay } from '@/components/otp-display';
 import Image from 'next/image';
 
 interface ShareMetadata {
@@ -264,23 +265,12 @@ export default function ViewSharedPage() {
                                     </div>
                                 )}
 
-                                {/* OTP Secret */}
+                                {/* OTP */}
                                 {decryptedData.otp_secret && (
                                     <div className="space-y-1.5">
-                                        <Label className="text-xs font-medium text-zinc-500">OTP Secret</Label>
-                                        <div className="flex gap-2">
-                                            <Input
-                                                value={decryptedData.otp_secret}
-                                                readOnly
-                                                className="h-9 rounded-xl border-white/[0.10] bg-white/[0.05] font-mono text-xs"
-                                            />
-                                            <Button
-                                                size="icon"
-                                                onClick={() => copy(decryptedData.otp_secret!, 'OTP Secret')}
-                                                className="size-9 shrink-0 rounded-xl bg-emerald-400 text-zinc-950 hover:bg-emerald-300"
-                                            >
-                                                <Copy className="size-3.5" strokeWidth={2} />
-                                            </Button>
+                                        <Label className="text-xs font-medium text-zinc-500">OTP (TOTP)</Label>
+                                        <div className="rounded-xl border border-white/[0.10] bg-white/[0.05] px-4 py-3">
+                                            <OtpDisplay secret={decryptedData.otp_secret} />
                                         </div>
                                     </div>
                                 )}
