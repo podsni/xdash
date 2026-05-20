@@ -56,12 +56,27 @@ export function ActiveSharesPanel() {
 
     const count = shares?.length ?? 0;
 
+    const getFullLink = (id: string): string => {
+        try {
+            const stored = JSON.parse(localStorage.getItem('share_links') || '{}');
+            return stored[id] || `${window.location.origin}/share/${id}`;
+        } catch {
+            return `${window.location.origin}/share/${id}`;
+        }
+    };
+
     const handleDelete = async (id: string, name: string) => {
         if (!confirm(`Hapus share "${name}"? Link tidak bisa diakses lagi.`)) return;
         setDeleting(id);
         try {
             const res = await fetch(`/api/share/${id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error();
+            // Hapus dari localStorage
+            try {
+                const stored = JSON.parse(localStorage.getItem('share_links') || '{}');
+                delete stored[id];
+                localStorage.setItem('share_links', JSON.stringify(stored));
+            } catch { /* ignore */ }
             toast.success('Share dihapus');
             mutate();
         } catch {
@@ -72,8 +87,10 @@ export function ActiveSharesPanel() {
     };
 
     const copyLink = (id: string) => {
-        navigator.clipboard.writeText(`${window.location.origin}/share/${id}`);
-        toast.success('URL share disalin');
+        const link = getFullLink(id);
+        const hasKey = link.includes('#');
+        navigator.clipboard.writeText(link);
+        toast.success(hasKey ? 'Link share disalin' : 'URL disalin (buka ulang dari browser yang sama untuk link lengkap)');
     };
 
     if (!isLoading && count === 0) return null;
@@ -143,7 +160,7 @@ export function ActiveSharesPanel() {
                                             </div>
                                             {/* Actions */}
                                             <div className="flex shrink-0 items-center gap-0.5">
-                                                <Button variant="ghost" size="icon" onClick={() => window.open(`${window.location.origin}/share/${share.id}`, '_blank')} className="size-7 rounded-lg text-zinc-600 hover:bg-white/[0.06] hover:text-zinc-300" title="Buka">
+                                                <Button variant="ghost" size="icon" onClick={() => window.open(getFullLink(share.id), '_blank')} className="size-7 rounded-lg text-zinc-600 hover:bg-white/[0.06] hover:text-zinc-300" title="Buka">
                                                     <ExternalLink className="size-3" strokeWidth={2} />
                                                 </Button>
                                                 <Button variant="ghost" size="icon" onClick={() => copyLink(share.id)} className="size-7 rounded-lg text-zinc-600 hover:bg-white/[0.06] hover:text-zinc-300" title="Salin URL">

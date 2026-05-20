@@ -144,6 +144,12 @@ export function ShareDialog({ account, open, onOpenChange }: ShareDialogProps) {
 
             const link = `${window.location.origin}/share/${shareId}#${encryptionKey}`;
             setShareLink(link);
+            // Simpan full link (dengan key) ke localStorage agar bisa dicopy dari panel
+            try {
+                const stored = JSON.parse(localStorage.getItem('share_links') || '{}');
+                stored[shareId] = link;
+                localStorage.setItem('share_links', JSON.stringify(stored));
+            } catch { /* ignore */ }
             toast.success('Link share berhasil dibuat!');
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Gagal membuat share');
