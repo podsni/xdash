@@ -1,8 +1,8 @@
 -- Create shared_items table for secure credential sharing
 CREATE TABLE IF NOT EXISTS shared_items (
     id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    account_id TEXT NOT NULL,
+    user_id UUID NOT NULL,
+    account_id UUID NOT NULL,
     encrypted_data TEXT NOT NULL,
     password_hash TEXT,
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
