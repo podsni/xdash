@@ -5,7 +5,8 @@ import { verifySession } from './lib/auth';
 
 export async function middleware(request: NextRequest) {
     const path = request.nextUrl.pathname;
-    const isPublicPath = path === '/login' || path === '/register' || path.startsWith('/share/');
+    const isPublicPath = path === '/login' || path === '/register';
+    const isSharePage = path.startsWith('/share/');
     const isApi = path.startsWith('/api/');
     const isPublicApi = (path === '/api/settings' && request.method === 'GET') ||
         (path.startsWith('/api/share/') && (request.method === 'GET' || request.method === 'POST'));
@@ -13,11 +14,13 @@ export async function middleware(request: NextRequest) {
     const cookie = request.cookies.get('session')?.value;
     const session = cookie ? await verifySession(cookie) : null;
 
+    // Redirect logged-in users away from login/register only (not share pages)
     if (isPublicPath && session) {
         return NextResponse.redirect(new URL('/', request.nextUrl));
     }
 
-    if (isPublicApi) {
+    // Share pages are always accessible (no login required)
+    if (isSharePage || isPublicApi) {
         return NextResponse.next();
     }
 

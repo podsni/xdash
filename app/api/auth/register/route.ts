@@ -15,7 +15,7 @@ export async function POST(request: Request) {
             }
         } catch (error) {
             console.error('Registration check failed:', error);
-            // Allow registration if check fails (fail open) or consider treating as error
+            return NextResponse.json({ error: 'Registration check failed. Please try again.' }, { status: 500 });
         }
 
         if (!email || !password || !confirmPassword) {
