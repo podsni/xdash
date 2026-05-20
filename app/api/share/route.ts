@@ -72,9 +72,12 @@ export async function GET(req: NextRequest) {
                 s.view_count,
                 s.created_at,
                 s.last_accessed_at,
+                s.password_hash IS NOT NULL AS password_protected,
                 a.service_name,
                 a.username,
-                a.icon
+                a.icon,
+                (a.encrypted_password != '') AS has_password,
+                (a.encrypted_otp_secret != '') AS has_otp
             FROM shared_items s
             JOIN accounts a ON s.account_id = a.id
             WHERE s.user_id = $1 AND s.expires_at > NOW()
