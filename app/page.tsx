@@ -6,6 +6,7 @@ import useSWR from 'swr';
 import { fetchAccounts, type Account } from '@/lib/api';
 import { OtpCard } from '@/components/otp-card';
 import { AddAccountDialog } from '@/components/add-account-dialog';
+import { ActiveSharesPanel } from '@/components/active-shares-panel';
 import { ShieldCheck, LogOut, Settings, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -86,6 +87,8 @@ export default function Home() {
             )}
           </div>
         )}
+
+        <ActiveSharesPanel />
 
         {error && (
           <div className="flex items-start gap-3 rounded-xl border border-red-300/25 bg-red-400/10 p-4 text-sm text-red-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
