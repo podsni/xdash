@@ -296,7 +296,7 @@ export default function ViewSharedPage() {
                     </div>
                 </div>
 
-                <p className="mt-4 text-center text-xs text-zinc-700">Terenkripsi end-to-end · Bitdash</p>
+                <p className="mt-4 text-center text-xs text-zinc-700">Terenkripsi end-to-end · Tidak perlu akun · Bitdash</p>
             </div>
         </div>
     );

@@ -5,9 +5,10 @@ import { verifySession } from './lib/auth';
 
 export async function middleware(request: NextRequest) {
     const path = request.nextUrl.pathname;
-    const isPublicPath = path === '/login' || path === '/register';
+    const isPublicPath = path === '/login' || path === '/register' || path.startsWith('/share/');
     const isApi = path.startsWith('/api/');
-    const isPublicApi = path === '/api/settings' && request.method === 'GET';
+    const isPublicApi = (path === '/api/settings' && request.method === 'GET') ||
+        (path.startsWith('/api/share/') && (request.method === 'GET' || request.method === 'POST'));
 
     const cookie = request.cookies.get('session')?.value;
     const session = cookie ? await verifySession(cookie) : null;

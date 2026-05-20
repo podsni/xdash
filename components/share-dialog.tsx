@@ -325,9 +325,12 @@ export function ShareDialog({ account, open, onOpenChange }: ShareDialogProps) {
                                 <div className="size-2 rounded-full bg-emerald-400" />
                                 <p className="text-sm font-medium text-emerald-200">Link share berhasil dibuat</p>
                             </div>
+                            <p className="mt-2 text-xs text-zinc-500">
+                                Penerima <span className="text-zinc-400 font-medium">tidak perlu akun</span> — cukup buka link dan masukkan password (jika ada).
+                            </p>
                         </div>
 
-                        <div className="space-y-3 px-6 py-4">
+                        <div className="space-y-2 px-6 py-4">
                             <Label className="text-xs font-medium uppercase tracking-wider text-zinc-500">Link Share</Label>
                             <div className="flex gap-2">
                                 <Input
@@ -339,8 +342,40 @@ export function ShareDialog({ account, open, onOpenChange }: ShareDialogProps) {
                                     size="icon"
                                     onClick={() => copyToClipboard(shareLink, 'Link')}
                                     className="size-9 shrink-0 rounded-xl bg-emerald-400 text-zinc-950 hover:bg-emerald-300"
+                                    title="Salin link"
                                 >
                                     <Copy className="size-3.5" strokeWidth={2} />
+                                </Button>
+                            </div>
+                            {/* Native share / WhatsApp */}
+                            <div className="flex gap-2 pt-1">
+                                {typeof navigator !== 'undefined' && 'share' in navigator && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                            const text = sharePassword
+                                                ? `Link: ${shareLink}\nPassword: ${sharePassword}`
+                                                : shareLink;
+                                            navigator.share({ title: `Kredensial ${account.service_name}`, text });
+                                        }}
+                                        className="flex-1 h-8 rounded-lg border-white/[0.10] bg-white/[0.04] text-xs hover:bg-white/[0.08]"
+                                    >
+                                        Kirim via...
+                                    </Button>
+                                )}
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                        const text = sharePassword
+                                            ? `${shareLink}\n\nPassword: ${sharePassword}`
+                                            : shareLink;
+                                        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                                    }}
+                                    className="flex-1 h-8 rounded-lg border-white/[0.10] bg-white/[0.04] text-xs hover:bg-white/[0.08]"
+                                >
+                                    WhatsApp
                                 </Button>
                             </div>
                         </div>
